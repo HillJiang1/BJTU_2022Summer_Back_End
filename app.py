@@ -71,6 +71,22 @@ def queryManager():
     db = DBController()
     return db.queryManager(id)
 
+#修改管理员个人信息
+@app.route('/change',methods=['POST'])
+def change():
+    data = request.get_data()
+    json_data = json.loads(data)
+    print(json_data)
+    db = DBController()
+    realname = json_data['realName']
+    sex = json_data['sex']
+    email = json_data['mail']
+    phone = json_data['phone']
+    description = json_data['des']
+    userid = json_data['userName']
+    s = db.change(userid, realname, sex, email, phone, description)
+    return s
+
 #录入工作人员信息
 @app.route("/addWorker", methods = ['POST'])
 def add_worker():

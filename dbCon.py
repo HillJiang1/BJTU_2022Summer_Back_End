@@ -29,8 +29,9 @@ class DBController:
         self.cursor.execute(s)
         result = self.cursor.fetchall()
         print(result)
+        status = []
         if result:
-            status = userid
+            status.append({'userName':userid, 'realName':result[0][3]})
         else:
             status = "0"
         return status
@@ -70,7 +71,7 @@ class DBController:
     def queryManager(self, userName):
         jdata = []
         try:
-            sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName,Password FROM `sys_user` WHERE UserName=%s """
+            sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName FROM `sys_user` WHERE UserName= %s """
             self.cursor.execute(sql, userName)  # 执行sql语句
             res = self.cursor.fetchall()
             print(res)
@@ -83,14 +84,13 @@ class DBController:
                 phone = row[3].replace(" ", "")
                 description = row[4].replace(" ", "")
                 userName = row[5].replace(" ", "")
-                pwd = row[6].replace(" ", "")
+                print(userName)
                 result['realName'] = realname
                 result['sex'] = sex
                 result['mail'] = email
                 result['phone'] = phone
                 result['des'] = description
                 result['userName'] = userName
-                result['pwd'] = pwd
 
                 jdata.append(result)
             print(jdata)
@@ -100,6 +100,23 @@ class DBController:
             self.connect.rollback()
             str = "0"
         return jsonify(jdata)
+
+    #修改管理员个人信息
+    def change(self, userid, realname, sex, email, phone, description):
+        try:
+            str = '0'
+            sql = """UPDATE sys_user SET REAL_NAME=%s,SEX=%s,EMAIL=%s,PHONE=%s,DESCRIPTION=%s WHERE UserName=%s"""
+            print(sql)
+            values = (realname, sex, email, phone, description, userid)
+            self.cursor.execute(sql, values)  # 执行sql语句
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+            str = "1"
+        except:
+            self.connect.rollback()
+            str = "0"
+        # self.cursor.close()  # 关闭游标
+        # self.connect.close()  # 关闭数据库连接
+        return str
 
     #录入工作人员信息
     def add_worker(self, wName, sex,phone, ID, birth, hire_date, des, createTime):
