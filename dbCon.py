@@ -5,7 +5,7 @@ class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='yourpassword',
+                                  password='root',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
@@ -59,7 +59,7 @@ class DBController:
         self.cursor.execute(s)
         result = self.cursor.fetchall()
         print(result)
-        pwd = result[0][4]
+        pwd = result[0][2]
         print(pwd)
         if pwd == password:
             status = "1"
@@ -99,7 +99,7 @@ class DBController:
         except:
             self.connect.rollback()
             str = "0"
-        return jsonify(jdata)
+        return jsonify(jdata[0])
 
     #修改管理员个人信息
     def change(self, userid, realname, sex, email, phone, description):
@@ -254,14 +254,13 @@ class DBController:
                    guardian1_phone, guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des,
                    createTime, createName, updateTime, updateName):
         try:
-            str = '0'
-            sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,checkout_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY)
-    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+            sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY)
+    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
             print(sql)
             values = (
-                oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name, guardian1_phone,
-                guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
-                createName, updateTime, updateName)
+                    oldName, sex, phone, ID, birthday, date_in, roomNumber, guardian1_name, guardian1_phone,
+                    guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
+                    createName, updateTime, updateName)
             # values = (
             #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
 

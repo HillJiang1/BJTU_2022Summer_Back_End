@@ -44,7 +44,8 @@ def register():
 #确认密码
 @app.route("/confirm", methods=['POST'])
 def pass_confirm():
-    json_data = request.json
+    json_data = json.loads(request.get_data())
+    print(json_data)
     db = DBController()
     userid = json_data['userid']
     pasw = json_data['pass']
