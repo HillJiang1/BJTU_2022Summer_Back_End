@@ -1,9 +1,12 @@
+
 from flask import Flask,jsonify,request
 import json
 from dbCon import DBController
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
+basedir = os.path.abspath(os.path.dirname(__file__))
 CORS(app, supports_credentials=True)
 
 #登录
@@ -349,6 +352,36 @@ def deleteOld():
     id = json_data['id']
     db = DBController()
     return db.deleteOld(id)
+
+#老年人年龄图
+@app.route("/getPicture",methods=['GET'])
+def get_Picture():
+    return get_picture()
+
+#保存图片
+@app.route('/savePicture', methods=['POST'])
+def save_picture():
+    # import os
+    # 图片对象
+    file_obj = request.files.get('file')
+    print(file_obj)
+    # 图片名字
+    file_name = request.form.get('fileName')
+    # 图片保存的路径
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    # 保存
+    file_obj.save(save_path)
+    return '图片保存成功'
+
+
+#上传图片
+def get_picture():
+    picture_data = {
+        "file_name": "2.jpg",
+        "url": "http://127.0.0.1:5000/static/img/2.jpg"
+
+    }
+    return jsonify(picture_data)
 
 
 if __name__ == '__main__':

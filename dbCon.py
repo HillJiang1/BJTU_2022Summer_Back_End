@@ -393,7 +393,7 @@ class DBController:
         except:
             self.connect.rollback()
             str = "0"
-        return jsonify(json_data)
+        return jsonify(json_data[0])
 
     #删除老人信息
     def deleteOld(self,id):
