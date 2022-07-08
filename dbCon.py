@@ -5,7 +5,7 @@ class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='root',
+                                  password='yourpassword',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
@@ -120,7 +120,7 @@ class DBController:
 
     #录入工作人员信息
     def add_worker(self, wName, sex,phone, ID, birth, hire_date, des, createTime):
-        select = "SELECT * FROM employ_info WHERE id_card = '{}'".format(ID)
+        select = "SELECT * FROM employee_info WHERE id_card = '{}'".format(ID)
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         if result:
@@ -150,7 +150,7 @@ class DBController:
 
     #查询具体工作人员
     def query_worker(self, id):
-        select = "SELECT id, username, gender, phone, id_card, birthday, hire_date, resign_date, DESCRIPTION, CREATED, CREATEBY FROM employee_info"
+        select = "SELECT id, username, gender, phone, id_card, birthday, hire_date, resign_date, DESCRIPTION, CREATED, CREATEBY FROM employee_info WHERE id = '{}'".format(id)
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         return result
@@ -224,7 +224,7 @@ class DBController:
         except:
             self.connect.rollback()
             str = "0"
-        return jsonify(json_data)
+        return jsonify(json_data[0])
 
     #删除义工信息
     def deleteVolunteer(self, id):

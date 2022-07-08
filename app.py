@@ -122,12 +122,15 @@ def change_worker():
     phone = json_data['phone']
     ID = json_data['ID']
     birth = json_data['birthday']
+    print(birth)
     hire_date = json_data['hire_date']
     resign_date = json_data['resign_date']
     des = json_data['des']
     createTime = json_data['createTime']
     createName = json_data['createName']
+    print(123)
     status = db.change_worker(id, wName, sex, phone, ID, birth, hire_date, resign_date, des, createTime, createName)
+    print(234)
     return jsonify(status)
 
 #查询工作人员
@@ -141,7 +144,7 @@ def query_workers():
         workerName = item[1]
         sex = item[2]
         phone = item[3]
-        hire_date = item[4]
+        hire_date = item[4].__str__()
         result.append({'id':id, 'workerName':workerName, 'sex':sex, 'phone':phone, 'hire_date':hire_date})
     print(status)
     return jsonify(result)
@@ -153,6 +156,7 @@ def query_worker():
     json_data = json.loads(data)
     db = DBController()
     id = json_data['id']
+    print(62)
     status = db.query_worker(id)
     print(status)
     result = []
@@ -162,14 +166,14 @@ def query_worker():
         sex = item[2]
         phone = item[3]
         ID = item[4]
-        birthday = item[5]
-        hire_date = item[6]
-        resign_date = item[7]
+        birthday = item[5].__str__()
+        hire_date = item[6].__str__()
+        resign_date = item[7].__str__()
         des = item[8]
-        createTime = item[9]
+        createTime = item[9].__str__()
         createName = item[10]
         result.append({'id': id1, 'workerName': workerName, 'sex': sex, 'phone': phone, 'ID':ID, 'birthday':birthday, 'hire_date': hire_date, 'resign_date': resign_date, 'des':des, 'createTime':createTime, 'createName':createName})
-    return jsonify(result)
+    return jsonify(result[0])
 
 
 #删除工作人员
@@ -179,6 +183,7 @@ def delete_worker():
     json_data = json.loads(data)
     db = DBController()
     id = json_data['id']
+    print(id)
     status = db.delete_worker(id)
     return status
 
@@ -227,6 +232,7 @@ def query_volunteers():
         ID = item[4]
         workTime = item[5]
         result.append({'id':id, 'volunteerName':vName, 'sex':sex, 'phone':phone, 'ID':ID, 'workTime':workTime})
+    print(result)
     return jsonify(result)
 
 #查询具体义工信息
@@ -246,6 +252,7 @@ def deleteVolunteer():
     json_data = json.loads(data)
     print(json_data)
     id = json_data['id']
+    print(id)
     db = DBController()
     return db.deleteVolunteer(id)
 
