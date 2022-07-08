@@ -1,5 +1,7 @@
 import pymysql #导入模块
 from flask import Flask,jsonify,request
+import matplotlib.pyplot as plt
+import os
 
 class DBController:
     def __init__(self):
@@ -11,14 +13,24 @@ class DBController:
         self.cursor = self.connect.cursor()
 
     #注册
-    def register(self,name,pasw,rname,sex,email,phone,des):
+    def register(self,name,pasw,rname,sex,email,phone,des, code, file_name, url):
+        find = "SELECT * FROM invite_code WHERE code = '{}'".format(code)
+        self.cursor.execute(find)
+        result = self.cursor.fetchall()
+        if result:
+            time = result[0][1] - 1
+            insert = "UPDATE invite_code SET degree = '{}' WHERE code = '{}'".format(time, code)
+            self.cursor.execute(insert)
+            self.connect.commit()
 
-        sql = """INSERT INTO sys_user (UserName,Password,REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION) values(%s,%s,%s,%s,%s,%s,%s)"""
-        print(sql)
-        values = (name, pasw, rname, sex, email, phone, des)
-        self.cursor.execute(sql, values)  # 执行sql语句
-        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        str = "1"
+            sql = """INSERT INTO sys_user (UserName,Password,REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION, imageName, url) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+            print(sql)
+            values = (name, pasw, rname, sex, email, phone, des, file_name, url)
+            self.cursor.execute(sql, values)  # 执行sql语句
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+            str = "1"
+        else:
+            str = "2"
         self.cursor.close()  # 关闭游标
         return str
 
@@ -71,7 +83,7 @@ class DBController:
     def queryManager(self, userName):
         jdata = []
         try:
-            sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName FROM `sys_user` WHERE UserName= %s """
+            sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName, url FROM `sys_user` WHERE UserName= %s """
             self.cursor.execute(sql, userName)  # 执行sql语句
             res = self.cursor.fetchall()
             print(res)
@@ -84,6 +96,7 @@ class DBController:
                 phone = row[3].replace(" ", "")
                 description = row[4].replace(" ", "")
                 userName = row[5].replace(" ", "")
+                url = row[6]
                 print(userName)
                 result['realName'] = realname
                 result['sex'] = sex
@@ -91,6 +104,8 @@ class DBController:
                 result['phone'] = phone
                 result['des'] = description
                 result['userName'] = userName
+
+                result['image'] = url
 
                 jdata.append(result)
             print(jdata)
@@ -119,23 +134,23 @@ class DBController:
         return str
 
     #录入工作人员信息
-    def add_worker(self, wName, sex,phone, ID, birth, hire_date, des, createTime):
+    def add_worker(self, wName, sex,phone, ID, birth, hire_date, des, createTime,file_name, url):
         select = "SELECT * FROM employee_info WHERE id_card = '{}'".format(ID)
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         if result:
             status = "0"
         else:
-            sql = "INSERT INTO employee_info (username, gender, phone, id_card, birthday, hire_date, DESCRIPTION, CREATED) values ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
-            wName, sex, phone, ID, birth, hire_date, des, createTime)
+            sql = "INSERT INTO employee_info (username, gender, phone, id_card, birthday, hire_date, DESCRIPTION, CREATED,imgset_dir, profile_photo) values ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}','{}','{}')".format(
+            wName, sex, phone, ID, birth, hire_date, des, createTime,file_name, url)
             self.cursor.execute(sql)
             self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
             status = "1"
         return status
 
     #修改工作人员信息
-    def change_worker(self, id, wName, sex,phone, ID, birth, hire_date,resign_date, des, createTime, createName):
-        update = "UPDATE employee_info SET gender = '{}' , username = '{}' , phone = '{}' , id_card = '{}' , birthday = '{}' , hire_date = '{}' , resign_date = '{}' , DESCRIPTION = '{}' , CREATED = '{}' , CREATEBY = '{}' WHERE id = '{}'".format(sex, wName, phone, ID, birth, hire_date, resign_date, des, createTime, createName, id)
+    def change_worker(self, id, wName, sex,phone, ID, birth, hire_date,resign_date, des, createTime, createName, file_name, url):
+        update = "UPDATE employee_info SET gender = '{}' , username = '{}' , phone = '{}' , id_card = '{}' , birthday = '{}' , hire_date = '{}' , resign_date = '{}' , DESCRIPTION = '{}' , CREATED = '{}' , CREATEBY = '{}',  imgset_dir = '{}', profile_photo = '{}' WHERE id = '{}'".format(sex, wName, phone, ID, birth, hire_date, resign_date, des, createTime, createName, file_name, url, id)
         self.cursor.execute(update)
         self.connect.commit()
         status = "1"
@@ -150,7 +165,7 @@ class DBController:
 
     #查询具体工作人员
     def query_worker(self, id):
-        select = "SELECT id, username, gender, phone, id_card, birthday, hire_date, resign_date, DESCRIPTION, CREATED, CREATEBY FROM employee_info WHERE id = '{}'".format(id)
+        select = "SELECT id, username, gender, phone, id_card, birthday, hire_date, resign_date, DESCRIPTION, CREATED, CREATEBY, profile_photo FROM employee_info WHERE id = '{}'".format(id)
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         return result
@@ -164,22 +179,22 @@ class DBController:
         return status
 
     #录入义工信息
-    def add_volunteer(self, vName, sex, phone, ID, birth, workTime):
+    def add_volunteer(self, vName, sex, phone, ID, birth, workTime,hire_date, file_name, url):
         select = "SELECT * FROM volunteer_info WHERE id_card = '{}'".format(ID)
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         if result:
             status = "0"
         else:
-            add = "INSERT INTO volunteer_info (name, gender, phone, id_card, birthday, workTime) values('{}','{}','{}','{}','{}','{}')".format(vName, sex, phone, ID, birth, workTime)
+            add = "INSERT INTO volunteer_info (name, gender, phone, id_card, birthday, workTime,checkin_date, imgset_dir, profile_photo) values('{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(vName, sex, phone, ID, birth, workTime,hire_date, file_name, url)
             self.cursor.execute(add)
             self.connect.commit()
             status = "1"
         return status
 
     #修改义工信息
-    def change_volunteer(self, id, vName, sex, phone, ID, birth, workTime):
-        update = "UPDATE volunteer_info SET name = '{}' , gender = '{}' , phone = '{}' , id_card = '{}' , birthday = '{}' , workTime = '{}'  WHERE id = '{}'".format(vName, sex, phone, ID, birth, workTime, id)
+    def change_volunteer(self, id, vName, sex, phone, ID, birth, workTime,file_name, url):
+        update = "UPDATE volunteer_info SET name = '{}' , gender = '{}' , phone = '{}' , id_card = '{}' , birthday = '{}' , workTime = '{}'  , imgset_dir = '{}', profile_photo = '{}' WHERE id = '{}'".format(vName, sex, phone, ID, birth, workTime, file_name, url, id)
         self.cursor.execute(update)
         self.connect.commit()
         status = "1"
@@ -192,23 +207,28 @@ class DBController:
         result = self.cursor.fetchall()
         return result
 
-    #查询义工具体信息
+    # 查询义工具体信息
     def queryVolunteer(self, id):
+        json_data = []
         try:
-            sql = """SELECT id,name,gender,phone,id_card,birthday,workTime FROM `volunteer_info` WHERE id=%s """
+            sql = """SELECT id,name,gender,phone,id_card,birthday,workTime,checkin_date,checkout_date,profile_photo FROM `volunteer_info` WHERE id=%s """
             self.cursor.execute(sql, id)  # 执行sql语句
             res = self.cursor.fetchall()
             print(res)
-            json_data = []
+
             for row in res:
                 result = {}
                 id = row[0]
-                username = row[1].replace(" ", "")
-                gender = row[2].replace(" ", "")
-                phone = row[3].replace(" ", "")
-                id_card = row[4].replace(" ", "")
+                username = row[1]
+                gender = row[2]
+                phone = row[3]
+                id_card = row[4]
                 birthday = row[5].__str__()
-                worktime = row[6].replace(" ", "")
+                worktime = row[6]
+                hire_date = row[7].__str__()
+                resign_date = row[8].__str__()
+                profile_photo = row[9]
+                print(1)
                 result['id'] = id
                 result['volunteerName'] = username
                 result['sex'] = gender
@@ -216,6 +236,9 @@ class DBController:
                 result['ID'] = id_card
                 result['birthday'] = birthday
                 result['workTime'] = worktime
+                result['hire_date'] = hire_date
+                result['resign_date'] = resign_date
+                result['image'] = profile_photo
 
                 json_data.append(result)
             print(json_data)
@@ -243,7 +266,7 @@ class DBController:
 
     #读取突发情况记录
     def read_record(self):
-        select = "SELECT id, event_type, event_date, event_location, event_desc, oldperson_id FROM event_info"
+        select = "SELECT id, event_type, event_date, event_location, event_desc, oldperson_id,url  FROM event_info"
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         print(result)
@@ -252,15 +275,15 @@ class DBController:
     #录入老人信息
     def addOld(self, oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name,
                    guardian1_phone, guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des,
-                   createTime, createName, updateTime, updateName):
+                   createTime, createName, updateTime, updateName,file_name, url):
         try:
-            sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY)
-    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+            sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY,imgset_dir, profile_photo)
+    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
             print(sql)
             values = (
                     oldName, sex, phone, ID, birthday, date_in, roomNumber, guardian1_name, guardian1_phone,
                     guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
-                    createName, updateTime, updateName)
+                    createName, updateTime, updateName,file_name, url)
             # values = (
             #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
 
@@ -277,15 +300,15 @@ class DBController:
     #修改老人信息
     def changeOld(self, id, oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name,
                       guardian1_phone, guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation,
-                      des, createTime, createName, updateTime, updateName):
+                      des, createTime, createName, updateTime, updateName,file_name, url):
         try:
             str = '0'
-            sql = """UPDATE oldperson_info SET username=%s,gender=%s,phone=%s,id_card=%s,birthday=%s,checkin_date=%s,checkout_date=%s,room_number=%s,firstguardian_name=%s,firstguardian_phone=%s,firstguardian_wechat=%s,secondguardian_name=%s,secondguardian_phone=%s,secondguardian_wechat=%s,health_state=%s,DESCRIPTION=%s,CREATED=%s,CREATEBY=%s,UPDATED=%s,UPDATEBY=%s WHERE id=%s"""
+            sql = """UPDATE oldperson_info SET username=%s,gender=%s,phone=%s,id_card=%s,birthday=%s,checkin_date=%s,checkout_date=%s,room_number=%s,firstguardian_name=%s,firstguardian_phone=%s,firstguardian_wechat=%s,secondguardian_name=%s,secondguardian_phone=%s,secondguardian_wechat=%s,health_state=%s,DESCRIPTION=%s,CREATED=%s,CREATEBY=%s,UPDATED=%s,UPDATEBY=%s,imgset_dir=%s, profile_photo=%s WHERE id=%s"""
             print(sql)
             values = (
                 oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name, guardian1_phone,
                 guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
-                createName, updateTime, updateName, id)
+                createName, updateTime, updateName,file_name,url, id)
             # values = (
             #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
 
@@ -331,15 +354,15 @@ class DBController:
 
         return jsonify(json_data)
 
-    #查询老人具体信息
-    def queryOld(self,id):
+    # 查询老人具体信息
+    def queryOld(self, id):
         print("res")
         try:
             sql = """SELECT * FROM `oldperson_info` WHERE id=%s """
-            self.cursor.execute(sql,id)  # 执行sql语句
-            res=self.cursor.fetchall()
+            self.cursor.execute(sql, id)  # 执行sql语句
+            res = self.cursor.fetchall()
             print(res)
-            json_data=[]
+            json_data = []
             for row in res:
                 result = {}
                 id = row[0]
@@ -350,6 +373,7 @@ class DBController:
                 birthday = row[5].__str__()
                 checkin_date = row[6].__str__()
                 checkout_date = row[7].__str__()
+                img = row[9]
                 room_number = row[10].replace(" ", "")
                 firstguardian_name = row[11].replace(" ", "")
                 firstguardian_phone = row[13].replace(" ", "")
@@ -368,27 +392,28 @@ class DBController:
                 result['oldName'] = username
                 result['sex'] = gender
                 result['phone'] = phone
-                result['ID']=id_card
-                result['birthday']=birthday
-                result['date_in']=checkin_date
-                result['date_out']=checkout_date
+                result['ID'] = id_card
+                result['birthday'] = birthday
+                result['date_in'] = checkin_date
+                result['date_out'] = checkout_date
+                result['image'] = img
                 result['roomNumber'] = room_number
-                result['guardian1_name']=firstguardian_name
+                result['guardian1_name'] = firstguardian_name
                 result['guardian1_phone'] = firstguardian_phone
-                result['guardian1_wechat']=firstguardian_wechat
-                result['guardian2_name']=secondguardian_name
-                result['guardian2_phone']=secondguardian_phone
-                result['guardian2_wechat']=secondguardian_wechat
-                result['situation']=health_state
-                result['des']=description
-                result['createTime']=created
-                result['createName']=createby
-                result['updateTime']=updated
-                result['updateName']=updateby
+                result['guardian1_wechat'] = firstguardian_wechat
+                result['guardian2_name'] = secondguardian_name
+                result['guardian2_phone'] = secondguardian_phone
+                result['guardian2_wechat'] = secondguardian_wechat
+                result['situation'] = health_state
+                result['des'] = description
+                result['createTime'] = created
+                result['createName'] = createby
+                result['updateTime'] = updated
+                result['updateName'] = updateby
                 json_data.append(result)
             print(json_data)
             self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str="1"
+            str = "1"
         except:
             self.connect.rollback()
             str = "0"
@@ -411,6 +436,104 @@ class DBController:
         # self.connect.close()  # 关闭数据库连接
         return str
 
+    def analysisImage_old(self):
+        sql = """select
+    Sum(Case When 年龄 <=60 Then 1 Else 0 End) As '1',
+    Sum(Case When 年龄 Between 60 And 65 Then 1 Else 0 End) As '2',
+    Sum(Case When 年龄 Between 65 And 70 Then 1 Else 0 End) As '3',
+    Sum(Case When 年龄 Between 70 And 75 Then 1 Else 0 End) As '4',
+    Sum(Case When 年龄 Between 75 And 80 Then 1 Else 0 End) As '5',
+    Sum(Case When 年龄 >=80 Then 1 Else 0 End) As '6'
+    From
+    (
+    SELECT *, ROUND(DATEDIFF(CURDATE(), birthday)/365.2422)  AS '年龄' FROM oldperson_info
+    ) s ;"""
+        self.cursor.execute(sql)
+        rows = self.cursor.fetchall()
+        # y1 = self.cursor.fetchone()  # 获取sql数据
+
+        x = ("60岁以下", "60-65岁", "65-70岁", "70-75岁", "75-80岁", "80岁以上")
+        plt.bar(x, rows[0])
+        plt.title("年龄分析")
+        plt.xlabel("年龄段")
+        plt.ylabel("人数")
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['年龄段'])
+        plt.rcParams['font.sans-serif'] = ['SimHei']
+        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\oldAna.png'
+        plt.savefig(save_path)
+        plt.show()
+
+    def workerImage(self):
+        sql = """select COUNT(id),MONTH(hire_date) as month from employee_info where hire_date>'2020-01-01' AND hire_date<'2020-12-31'group by month order by month ASC"""
+        self.cursor.execute(sql)
+        rows = self.cursor.fetchall()
+        print(rows)
+        y1 = []
+        j = 0
+        for x in range(1, 13):
+            if ((j < len(rows) and (rows[j][1] == x))):
+                print(j)
+                y1.append(rows[j][0])
+                j = j + 1
+            else:
+                y1.append(0)
+        sql = """select COUNT(id),MONTH(resign_date) as month from employee_info where resign_date>'2020-01-01' AND resign_date<'2020-12-31'group by month order by month ASC"""
+        self.cursor.execute(sql)
+        rows1 = self.cursor.fetchall()
+        y2 = []
+        j = 0
+        for x in range(1, 13):
+            if ((j < len(rows1) and (rows1[j][1] == x))):
+                print(j)
+                y2.append(rows1[j][0])
+                j = j + 1
+            else:
+                y2.append(0)
+        print(y1)
+        x = ("一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月")
+        plt.plot(x, y1, label="入职人数")
+        plt.plot(x, y2, label="离职人数")
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
+        plt.rcParams['font.sans-serif'] = ['SimHei']
+        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\worker.png'
+        plt.savefig(save_path)
+        plt.show()
+
+    def volunteerImage(self):
+        sql = """select COUNT(id),MONTH(checkin_date) as month from volunteer_info where checkin_date>'2020-01-01' AND checkin_date<'2020-12-31'group by month order by month ASC"""
+        self.cursor.execute(sql)
+        rows = self.cursor.fetchall()
+        print(rows)
+        y1 = []
+        j = 0
+        for x in range(1, 13):
+            if ((j < len(rows) and (rows[j][1] == x))):
+                print(j)
+                y1.append(rows[j][0])
+                j = j + 1
+            else:
+                y1.append(0)
+        sql = """select COUNT(id),MONTH(checkout_date) as month from volunteer_info where checkout_date>'2020-01-01' AND checkout_date<'2020-12-31'group by month order by month ASC"""
+        self.cursor.execute(sql)
+        rows1 = self.cursor.fetchall()
+        y2 = []
+        j = 0
+        for x in range(1, 13):
+            if ((j < len(rows1) and (rows1[j][1] == x))):
+                print(j)
+                y2.append(rows1[j][0])
+                j = j + 1
+            else:
+                y2.append(0)
+        print(y1)
+        x = ("一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月")
+        plt.plot(x, y1, label="入职人数")
+        plt.plot(x, y2, label="离职人数")
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
+        plt.rcParams['font.sans-serif'] = ['SimHei']
+        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\volunteer.png'
+        plt.savefig(save_path)
+        plt.show()
 
     def close(self):
         self.connect.close()  # 关闭数据库连接

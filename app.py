@@ -7,7 +7,7 @@ import os
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
-CORS(app, supports_credentials=True)
+CORS(app, resources=r'/*')
 
 #登录
 @app.route('/login', methods=['POST'])
@@ -23,22 +23,28 @@ def uni_login():
     status = db.login(userid, password)
     return jsonify(status)
 
-#注册
+#注册 获取头像
 @app.route("/register", methods=['POST'])
 def register():
     # json_data = request.json
     # print(json_data)
-    data = request.get_data()
-    json_data = json.loads(data)
+    data = request.form
     db=DBController()
-    realname=json_data['realname']
-    sex=json_data['sex']
-    email=json_data['email']
-    phone=json_data['phone']
-    description=json_data['description']
-    userid=json_data['userid']
-    pasw=json_data['pass']
-    s=db.register(userid,pasw,realname,sex,email,phone,description)
+    realname=data.get('realname')
+    sex=data.get('sex')
+    email=data.get('email')
+    phone=data.get('phone')
+    description=data.get('description')
+    userid=data.get('userid')
+    pasw=data.get('pass')
+    code = data.get('code')
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    # 保存
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    s=db.register(userid,pasw,realname,sex,email,phone,description,code,file_name, path)
     return s
 
 #确认密码
@@ -94,42 +100,49 @@ def change():
 #录入工作人员信息
 @app.route("/addWorker", methods = ['POST'])
 def add_worker():
-    data = request.get_data()
+    data = request.form
     print(data)
-    json_data = json.loads(data)
-    print(json_data)
     db = DBController()
-    wName = json_data['workerName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birth = json_data['birthday']
-    hire_date = json_data['hire_date']
-    des = json_data['des']
-    createTime = json_data['createTime']
-    status = db.add_worker(wName, sex, phone, ID, birth, hire_date, des, createTime)
+    wName = data.get('workerName')
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birth = data.get('birthday')
+    hire_date = data.get('hire_date')
+    des = data.get('des')
+    createTime = data.get('createTime')
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    status = db.add_worker(wName, sex, phone, ID, birth, hire_date, des, createTime, file_name, path)
     return jsonify(status)
 
 #修改工作人员信息
 @app.route("/changeWorker", methods = ['POST'])
 def change_worker():
-    data = request.get_data()
-    json_data = json.loads(data)
+    data = request.get_json()
+    print(data)
     db = DBController()
-    id = json_data['id']
-    wName = json_data['workerName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birth = json_data['birthday']
-    print(birth)
-    hire_date = json_data['hire_date']
-    resign_date = json_data['resign_date']
-    des = json_data['des']
-    createTime = json_data['createTime']
-    createName = json_data['createName']
+    id = data['id']
+    wName = data['workerName']
+    sex = data['sex']
+    phone = data['phone']
+    ID = data['ID']
+    birth = data['birthday']
+    hire_date = data['hire_date']
+    resign_date = data['resign_date']
+    des = data['des']
+    createTime = data['createTime']
+    createName = data['createName']
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
     print(123)
-    status = db.change_worker(id, wName, sex, phone, ID, birth, hire_date, resign_date, des, createTime, createName)
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    status = db.change_worker(id, wName, sex, phone, ID, birth, hire_date, resign_date, des, createTime, createName, file_name, path)
     print(234)
     return jsonify(status)
 
@@ -149,8 +162,9 @@ def query_workers():
     print(status)
     return jsonify(result)
 
+
 #查询具体工作人员
-@app.route("/queryWorker", methods = ['POST'])
+@app.route("/queryWorker", methods = ['GET'])
 def query_worker():
     data = request.get_data()
     json_data = json.loads(data)
@@ -172,7 +186,8 @@ def query_worker():
         des = item[8]
         createTime = item[9].__str__()
         createName = item[10]
-        result.append({'id': id1, 'workerName': workerName, 'sex': sex, 'phone': phone, 'ID':ID, 'birthday':birthday, 'hire_date': hire_date, 'resign_date': resign_date, 'des':des, 'createTime':createTime, 'createName':createName})
+        img=item[11]
+        result.append({'id': id1, 'workerName': workerName, 'sex': sex, 'phone': phone, 'ID':ID, 'birthday':birthday, 'hire_date': hire_date, 'resign_date': resign_date, 'des':des, 'createTime':createTime, 'createName':createName,"image":img,})
     return jsonify(result[0])
 
 
@@ -190,32 +205,43 @@ def delete_worker():
 #录入义工信息
 @app.route("/addVolunteer", methods = ['POST'])
 def add_volunteer():
-    data = request.get_data()
-    json_data = json.loads(data)
+    data = request.form
     db = DBController()
-    vName = json_data['volunteerName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birth = json_data['birthday']
-    workTime = json_data['workTime']
-    status = db.add_volunteer(vName, sex, phone, ID, birth, workTime)
+    vName = data.get('volunteerName')
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birth = data.get('birthday')
+    workTime = data.get('workTime')
+    hire_date = data.get('hire_date')
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    file_obj.save(save_path)
+    print(123)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    status = db.add_volunteer(vName, sex, phone, ID, birth, workTime,hire_date, file_name, path)
+    print(234)
     return jsonify(status)
 
 #修改义工信息
 @app.route("/changeVolunteer", methods = ['POST'])
 def change_volunteer():
-    data = request.get_data()
-    json_data = json.loads(data)
+    data = request.form
     db = DBController()
-    id = json_data['id']
-    vName = json_data['volunteerName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birth = json_data['birthday']
-    workTime = json_data['workTime']
-    status = db.change_volunteer(id, vName, sex, phone, ID, birth, workTime)
+    id = data.get('id')
+    vName = data.get('volunteerName')
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birth = data.get('birthday')
+    workTime = data.get('workTime')
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    status = db.change_volunteer(id, vName, sex, phone, ID, birth, workTime,file_name,path)
     return jsonify(status)
 
 #查询义工
@@ -257,7 +283,7 @@ def deleteVolunteer():
     return db.deleteVolunteer(id)
 
 #读取突发情况记录
-@app.route("/readRecord", methods = ['POST'])
+@app.route("/readRecord", methods = ['GET'])
 def read_record():
     db = DBController()
     status = db.read_record()
@@ -266,72 +292,83 @@ def read_record():
     for item in status:
         id = item[0]
         type = item[1]
-        time = item[2]
+        time = item[2].__str__()
         dest = item[3]
         des = item[4]
         old_id = item[5]
-        result.append({'id':id, 'type':type, 'time':time, 'destination':dest, 'des':des, 'old_id':old_id})
-        return jsonify(result)
+        url = item[6]
+        result.append({'id':id, 'type':type, 'time':time, 'destination':dest, 'des':des, 'old_id':old_id,'image':url})
+    print(result)
+    return jsonify(result)
 
 #录入老人信息
 @app.route("/addOld", methods=['POST'])
-def addOld():
-    data = request.get_data()
-    json_data = json.loads(data)
-    print(json_data)
-    oldName = json_data['oldName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birthday = json_data['birthday']
-    date_in = json_data['date_in']
-    date_out = json_data['date_out']
-    roomNumber = json_data['roomNumber']
-    guardian1_name = json_data['guardian1_name']
-    guardian1_phone = json_data['guardian1_phone']
-    guardian1_wechat = json_data['guardian1_wechat']
-    guardian2_name = json_data['guardian2_name']
-    guardian2_phone = json_data['guardian2_phone']
-    guardian2_wechat = json_data['guardian2_wechat']
-    situation = json_data['situation']
-    des = json_data['des']
-    createTime = json_data['createTime']
-    createName = json_data['createName']
-    updateTime = json_data['updateTime']
-    updateName = json_data['updateName']
+def add_Old():
+    data = request.form
     db = DBController()
-    s = db.addOld(oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName)
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    oldName = data.get('oldName')
+    print(oldName)
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birthday = data.get('birthday')
+    date_in = data.get('date_in')
+    date_out = data.get('date_out')
+    roomNumber = data.get('roomNumber')
+    guardian1_name = data.get('guardian1_name')
+    guardian1_phone = data.get('guardian1_phone')
+    guardian1_wechat = data.get('guardian1_wechat')
+    guardian2_name = data.get('guardian2_name')
+    guardian2_phone = data.get('guardian2_phone')
+    guardian2_wechat = data.get('guardian2_wechat')
+    situation = data.get('situation')
+    des = data.get('des')
+    createTime = data.get('createTime')
+    createName = data.get('createName')
+    updateTime = data.get('updateTime')
+    updateName = data.get('updateName')
+
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    s = db.addOld(oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName,file_name,path)
+    print(s)
     return s
 
 #修改老人信息
 @app.route("/changeOld", methods=['POST'])
 def chanegOld():
-    data = request.get_data()
-    json_data = json.loads(data)
-    print(json_data)
-    id=json_data['id']
-    oldName = json_data['oldName']
-    sex = json_data['sex']
-    phone = json_data['phone']
-    ID = json_data['ID']
-    birthday = json_data['birthday']
-    date_in = json_data['date_in']
-    date_out = json_data['date_out']
-    roomNumber = json_data['roomNumber']
-    guardian1_name = json_data['guardian1_name']
-    guardian1_phone = json_data['guardian1_phone']
-    guardian1_wechat = json_data['guardian1_wechat']
-    guardian2_name = json_data['guardian2_name']
-    guardian2_phone = json_data['guardian2_phone']
-    guardian2_wechat = json_data['guardian2_wechat']
-    situation = json_data['situation']
-    des = json_data['des']
-    createTime = json_data['createTime']
-    createName = json_data['createName']
-    updateTime = json_data['updateTime']
-    updateName = json_data['updateName']
     db = DBController()
-    s = db.changeOld(id,oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName)
+    data = request.form
+    id=data.get('id')
+    oldName = data.get('oldName')
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birthday = data.get('birthday')
+    date_in = data.get('date_in')
+    date_out = data.get('date_out')
+    roomNumber = data.get('roomNumber')
+    guardian1_name = data.get('guardian1_name')
+    guardian1_phone = data.get('guardian1_phone')
+    guardian1_wechat = data.get('guardian1_wechat')
+    guardian2_name = data.get('guardian2_name')
+    guardian2_phone = data.get('guardian2_phone')
+    guardian2_wechat = data.get('guardian2_wechat')
+    situation = data.get('situation')
+    des = data.get('des')
+    createTime = data.get('createTime')
+    createName = data.get('createName')
+    updateTime = data.get('updateTime')
+    updateName = data.get('updateName')
+    file_obj = request.files.get('file')
+    file_name = request.form.get('fileName')
+    save_path1 = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    file_obj.save(save_path1)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    s = db.changeOld(id,oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName,file_name, path)
     return s
 
 #查询老人信息
@@ -369,28 +406,47 @@ def get_Picture():
 #保存图片
 @app.route('/savePicture', methods=['POST'])
 def save_picture():
-    # import os
-    # 图片对象
+    # print(request)
     file_obj = request.files.get('file')
-    print(file_obj)
-    # 图片名字
-    file_name = request.form.get('fileName')
-    # 图片保存的路径
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    # print(type(file_obj))
+    # print(file_obj)
+    file_name = request.form
+    file1 = file_name.get('fileName')
+    data = file_name.get('userid')
+    print(data)
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file1)
     # 保存
     file_obj.save(save_path)
+    print(save_path)
     return '图片保存成功'
 
 
 #上传图片
-def get_picture():
+def get_picture(src):
     picture_data = {
-        "file_name": "2.jpg",
-        "url": "http://127.0.0.1:5000/static/img/2.jpg"
+        "file_name": src,
+        "url": "http://127.0.0.1:5000/" + src
 
     }
     return jsonify(picture_data)
 
+@app.route("/analysisImage_old",methods=['GET'])
+def analysis_old():
+    db = DBController()
+    db.analysisImage_old()
+    return get_picture("/static/image/oldAna.png")
+
+@app.route("/workerImage",methods=['GET'])
+def workerImage():
+    db = DBController()
+    db.workerImage()
+    return get_picture("/static/image/worker.png")
+
+@app.route("/volunteerImage",methods=['GET'])
+def volunteerImage():
+    db = DBController()
+    db.volunteerImage()
+    return get_picture("/static/image/volunteer.png")
 
 if __name__ == '__main__':
     app.run()
