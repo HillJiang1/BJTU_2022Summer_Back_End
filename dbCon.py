@@ -7,7 +7,7 @@ class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='yourpassword',
+                                  password='root',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
@@ -198,7 +198,7 @@ class DBController:
 
     #修改义工信息
     def change_volunteer(self, id, vName, sex, phone, ID, birth, workTime,file_name, url):
-        update = "UPDATE volunteer_info SET name = '{}' , gender = '{}' , phone = '{}' , id_card = '{}' , birthday = '{}' , workTime = '{}'  , imgset_dir = '{}', profile_photo = '{}' WHERE id = '{}'".format(vName, sex, phone, ID, birth, workTime, file_name, url, id)
+        update = "UPDATE volunteer_info SET name = '{}' , gender = '{}' , phone = '{}'  , birthday = '{}' , workTime = '{}'  , imgset_dir = '{}', profile_photo = '{}' WHERE id = '{}'".format(vName, sex, phone,  birth, workTime, file_name, url, id)
         self.cursor.execute(update)
         self.connect.commit()
         status = "1"
@@ -313,9 +313,6 @@ class DBController:
                 oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name, guardian1_phone,
                 guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
                 createName, updateTime, updateName,file_name,url, id)
-            # values = (
-            #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
-
             self.cursor.execute(sql, values)  # 执行sql语句
             self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
             str = "1"
@@ -324,6 +321,7 @@ class DBController:
             str = "0"
             # self.cursor.close()  # 关闭游标
             # self.connect.close()  # 关闭数据库连接
+        print(str)
         return str
 
     #查询老人信息

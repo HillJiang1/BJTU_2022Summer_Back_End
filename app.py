@@ -164,9 +164,10 @@ def query_workers():
 
 
 #查询具体工作人员
-@app.route("/queryWorker", methods = ['GET'])
+@app.route("/queryWorker", methods = ['POST'])
 def query_worker():
     data = request.get_data()
+    print(data)
     json_data = json.loads(data)
     db = DBController()
     id = json_data['id']
@@ -238,9 +239,13 @@ def change_volunteer():
     workTime = data.get('workTime')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
-    file_obj.save(save_path)
-    path = "http://127.0.0.1:5000/static/img/" + file_name
+    path=' '
+    print(file_name)
+    if file_name!=None:
+        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+        file_obj.save(save_path)
+        path = "http://127.0.0.1:5000/static/img/" + file_name
+    else:file_name=' '
     status = db.change_volunteer(id, vName, sex, phone, ID, birth, workTime,file_name,path)
     return jsonify(status)
 
@@ -265,6 +270,7 @@ def query_volunteers():
 @app.route("/queryVolunteer",methods=['POST'])
 def queryVolunteer():
     data = request.get_data()
+    print(data)
     json_data = json.loads(data)
     print(json_data)
     id = json_data['id']
@@ -305,6 +311,7 @@ def read_record():
 @app.route("/addOld", methods=['POST'])
 def add_Old():
     data = request.form
+    # json_data = json.loads(data)
     db = DBController()
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
@@ -341,28 +348,29 @@ def add_Old():
 @app.route("/changeOld", methods=['POST'])
 def chanegOld():
     db = DBController()
-    data = request.form
-    id=data.get('id')
-    oldName = data.get('oldName')
-    sex = data.get('sex')
-    phone = data.get('phone')
-    ID = data.get('ID')
-    birthday = data.get('birthday')
-    date_in = data.get('date_in')
-    date_out = data.get('date_out')
-    roomNumber = data.get('roomNumber')
-    guardian1_name = data.get('guardian1_name')
-    guardian1_phone = data.get('guardian1_phone')
-    guardian1_wechat = data.get('guardian1_wechat')
-    guardian2_name = data.get('guardian2_name')
-    guardian2_phone = data.get('guardian2_phone')
-    guardian2_wechat = data.get('guardian2_wechat')
-    situation = data.get('situation')
-    des = data.get('des')
-    createTime = data.get('createTime')
-    createName = data.get('createName')
-    updateTime = data.get('updateTime')
-    updateName = data.get('updateName')
+    data = request.get_data()
+    json_data = json.loads(data)
+    id=json_data['id']
+    oldName = json_data['oldName']
+    sex = json_data['sex']
+    phone =json_data['phone']
+    ID = json_data['ID']
+    birthday = json_data['birthday']
+    date_in = json_data['date_in']
+    date_out = json_data['date_out']
+    roomNumber = json_data['roomNumber']
+    guardian1_name = json_data['guardian1_name']
+    guardian1_phone = json_data['guardian1_phone']
+    guardian1_wechat = json_data['guardian1_wechat']
+    guardian2_name = json_data['guardian2_name']
+    guardian2_phone = json_data['guardian2_phone']
+    guardian2_wechat = json_data['guardian2_wechat']
+    situation = json_data['situation']
+    des = json_data['des']
+    createTime = json_data['createTime']
+    createName = json_data['createName']
+    updateTime = json_data['updateTime']
+    updateName = json_data['updateName']
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
     save_path1 = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
@@ -382,6 +390,7 @@ def quertOlds():
 @app.route("/queryOld",methods=['POST'])
 def queryOld():
     data = request.get_data()
+    print(data)
     json_data = json.loads(data)
     print(json_data)
     id = json_data['id']
