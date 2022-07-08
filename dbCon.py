@@ -19,10 +19,14 @@ class DBController:
         result = self.cursor.fetchall()
         if result:
             time = result[0][1] - 1
-            insert = "UPDATE invite_code SET degree = '{}' WHERE code = '{}'".format(time, code)
-            self.cursor.execute(insert)
-            self.connect.commit()
-
+            if(time > 0):
+                insert = "UPDATE invite_code SET degree = '{}' WHERE code = '{}'".format(time, code)
+                self.cursor.execute(insert)
+                self.connect.commit()
+            else:
+                delete = "DELETE FROM invite_code WHERE code = '{}'".format(code)
+                self.cursor.execute(delete)
+                self.connect.commit()
             sql = """INSERT INTO sys_user (UserName,Password,REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION, imageName, url) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
             print(sql)
             values = (name, pasw, rname, sex, email, phone, des, file_name, url)
