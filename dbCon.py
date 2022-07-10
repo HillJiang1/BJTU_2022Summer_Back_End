@@ -121,12 +121,13 @@ class DBController:
         return jsonify(jdata[0])
 
     #修改管理员个人信息
-    def change(self, userid, realname, sex, email, phone, description):
+    def change(self, userid, realname, sex, email, phone, description,imageName,url):
         try:
             str = '0'
-            sql = """UPDATE sys_user SET REAL_NAME=%s,SEX=%s,EMAIL=%s,PHONE=%s,DESCRIPTION=%s WHERE UserName=%s"""
+            sql = """UPDATE sys_user SET REAL_NAME=%s,SEX=%s,EMAIL=%s,PHONE=%s,DESCRIPTION=%s,imageName=%s,url=%s WHERE UserName=%s"""
             print(sql)
-            values = (realname, sex, email, phone, description, userid)
+            values = (realname, sex, email, phone, description,imageName, url ,userid )
+            print(values)
             self.cursor.execute(sql, values)  # 执行sql语句
             self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
             str = "1"

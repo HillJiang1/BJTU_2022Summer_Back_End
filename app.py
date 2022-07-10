@@ -84,17 +84,23 @@ def queryManager():
 #修改管理员个人信息
 @app.route('/change',methods=['POST'])
 def change():
-    data = request.get_data()
-    json_data = json.loads(data)
+    json_data = request.form
     print(json_data)
     db = DBController()
-    realname = json_data['realName']
-    sex = json_data['sex']
-    email = json_data['mail']
-    phone = json_data['phone']
-    description = json_data['des']
-    userid = json_data['userName']
-    s = db.change(userid, realname, sex, email, phone, description)
+    realname = json_data.get('realName')
+    sex = json_data.get('sex')
+    email = json_data.get('mail')
+    phone = json_data.get('phone')
+    description = json_data.get('des')
+    userid = json_data.get('userName')
+    file_obj = request.files.get('file')
+    print(file_obj)
+    file_name = request.form.get('fileName')
+    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    print(123)
+    file_obj.save(save_path)
+    path = "http://127.0.0.1:5000/static/img/" + file_name
+    s = db.change(userid, realname, sex, email, phone, description,file_name,path)
     return s
 
 #录入工作人员信息
@@ -137,11 +143,13 @@ def change_worker():
     createTime = data.get('createTime')
     createName = data.get('createName')
     file_obj = request.files.get('file')
+    print(file_obj)
     file_name = request.form.get('fileName')
     save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
     print(123)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
+    print(path)
     status = db.change_worker(id, wName, sex, phone, ID, birth, hire_date, resign_date, des, createTime, createName, file_name, path)
     print(234)
     return jsonify(status)
