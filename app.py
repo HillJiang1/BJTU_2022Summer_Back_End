@@ -62,7 +62,6 @@ def pass_confirm():
 @app.route('/change_pwd', methods=['POST'])
 def change_password():
     db = DBController()
-    status = "0"
     data = request.get_data()
     j_data = json.loads(data)
     print(j_data)
@@ -269,9 +268,8 @@ def query_volunteers():
         vName = item[1]
         sex = item[2]
         phone = item[3]
-        ID = item[4]
-        workTime = item[5]
-        result.append({'id':id, 'volunteerName':vName, 'sex':sex, 'phone':phone, 'ID':ID, 'workTime':workTime})
+        workTime = item[4]
+        result.append({'id':id, 'volunteerName':vName, 'sex':sex, 'phone':phone, 'workTime':workTime})
     print(result)
     return jsonify(result)
 

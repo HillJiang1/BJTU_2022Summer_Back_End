@@ -7,7 +7,7 @@ class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='root',
+                                  password='yourpassword',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
@@ -70,6 +70,7 @@ class DBController:
     def change_password(self, userid, password):
         update = "UPDATE sys_user SET Password= '{}' WHERE UserName = '{}' ".format(password, userid)
         self.cursor.execute(update)
+        self.connect.commit()
         # count = cursor.rowcount
         s = "SELECT * FROM sys_user WHERE UserName='{}' ".format(userid)
         self.cursor.execute(s)
@@ -207,7 +208,7 @@ class DBController:
 
     #查询义工
     def query_volunteers(self):
-        select = "SELECT id, name, gender, phone,id_card, workTime FROM volunteer_info"
+        select = "SELECT id, name, gender, phone, workTime FROM volunteer_info"
         self.cursor.execute(select)
         result = self.cursor.fetchall()
         return result
