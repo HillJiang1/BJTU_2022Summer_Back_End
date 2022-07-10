@@ -122,20 +122,20 @@ def add_worker():
 #修改工作人员信息
 @app.route("/changeWorker", methods = ['POST'])
 def change_worker():
-    data = request.get_json()
+    data = request.form
     print(data)
     db = DBController()
-    id = data['id']
-    wName = data['workerName']
-    sex = data['sex']
-    phone = data['phone']
-    ID = data['ID']
-    birth = data['birthday']
-    hire_date = data['hire_date']
-    resign_date = data['resign_date']
-    des = data['des']
-    createTime = data['createTime']
-    createName = data['createName']
+    id = data.get('id')
+    wName = data.get('workerName')
+    sex = data.get('sex')
+    phone = data.get('phone')
+    ID = data.get('ID')
+    birth = data.get('birthday')
+    hire_date = data.get('hire_date')
+    resign_date = data.get('resign_date')
+    des = data.get('des')
+    createTime = data.get('createTime')
+    createName = data.get('createName')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
     save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
@@ -229,6 +229,7 @@ def add_volunteer():
 @app.route("/changeVolunteer", methods = ['POST'])
 def change_volunteer():
     data = request.form
+    print(data)
     db = DBController()
     id = data.get('id')
     vName = data.get('volunteerName')
@@ -349,7 +350,8 @@ def add_Old():
 def chanegOld():
     db = DBController()
     json_data = request.form
-
+    print("asdhu")
+    print(json_data)
     id=json_data.get('id')
     oldName = json_data.get('oldName')
     sex = json_data.get('sex')
