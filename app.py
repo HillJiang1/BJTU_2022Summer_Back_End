@@ -343,7 +343,7 @@ def add_Old():
     createName = data.get('createName')
     updateTime = data.get('updateTime')
     updateName = data.get('updateName')
-
+    print(type(file_obj))
     save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
@@ -441,10 +441,10 @@ def save_picture():
 #上传图片
 def get_picture(src):
     picture_data = {
-        "file_name": src,
         "url": "http://127.0.0.1:5000/" + src
 
     }
+    # save_path = os.path.abspath(os.path.dirname(__file__) ) + str(src)
     return jsonify(picture_data)
 
 @app.route("/analysisImage_old",methods=['GET'])
@@ -464,6 +464,73 @@ def volunteerImage():
     db = DBController()
     db.volunteerImage()
     return get_picture("/static/image/volunteer.png")
+
+@app.route("/roomRecord",methods = ['GET'])
+def room_record():
+    db = DBController()
+    status = db.roomRecord()
+    result = []
+    for item in status:
+        id = item[0]
+        type = item[1]
+        image = item[2]
+        result.append({'id':id, 'type':type,'image':image})
+    print(result)
+    return jsonify(result)
+
+@app.route("/corridorRecord",methods = ['GET'])
+def corridor_record():
+    db = DBController()
+    status = db.corridorRecord()
+    result = []
+    for item in status:
+        id = item[0]
+        type = item[1]
+        image = item[2]
+        result.append({'id':id, 'type':type,'image':image})
+    return jsonify(result)
+
+@app.route("/deskRecord",methods = ['GET'])
+def desk_record():
+    db = DBController()
+    status = db.deskRecord()
+    result = []
+    for item in status:
+        id = item[0]
+        type = item[1]
+        image = item[2]
+        result.append({'id':id, 'type':type,'image':image})
+    return jsonify(result)
+
+@app.route("/yardRecord",methods = ['GET'])
+def yard_record():
+    db = DBController()
+    status = db.yardRecord()
+    result = []
+    for item in status:
+        id = item[0]
+        type = item[1]
+        image = item[2]
+        result.append({'id':id, 'type':type,'image':image})
+    return jsonify(result)
+
+
+@app.route("/getCalendar",methods=['GET'])
+def holidayItem():
+    db = DBController()
+    s = db.queryHolidays()
+    return s
+@app.route("/modifyCalendar",methods=['POST'])
+def holidayAdd():
+    data = request.get_data()
+    json_data = json.loads(data)
+    print(data)
+    db = DBController()
+    id=json_data['date']
+    title=json_data['name']
+    s = db.addHoliday(id,title)
+    print(s)
+    return s
 
 if __name__ == '__main__':
     app.run()

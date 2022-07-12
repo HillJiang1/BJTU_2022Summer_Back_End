@@ -539,5 +539,62 @@ class DBController:
         plt.savefig(save_path)
         plt.show()
 
+    def roomRecord(self):
+        select = "select * from room_info"
+        self.cursor.execute(select)
+        result = self.cursor.fetchall()
+        return result
+
+    def corridorRecord(self):
+        select = "select * from corridor_info"
+        self.cursor.execute(select)
+        result = self.cursor.fetchall()
+        return result
+
+    def deskRecord(self):
+        select = "select * from desk_info"
+        self.cursor.execute(select)
+        result = self.cursor.fetchall()
+        return result
+
+    def yardRecord(self):
+        select = "select * from yard_info"
+        self.cursor.execute(select)
+        result = self.cursor.fetchall()
+        return result
+
+    def queryHolidays(self):
+        try:
+            sql = """SELECT day(date),title FROM `calendar` """
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchall()
+            json_data = []
+            for row in res:
+                print(row)
+                result = {}
+                id = row[0].__str__()
+                title = row[1].replace(" ", "")
+                result['date'] = id
+                result['name'] = title
+                print(result)
+                json_data.append(result)
+            print(json_data)
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        except:
+            self.connect.rollback()
+        print(json_data)
+        return jsonify(json_data)
+
+    def addHoliday(self, id, title):
+        sql = """INSERT into calendar(date,title)
+        values (%s,%s)"""
+        print(sql)
+        values = (id, title)
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+
+        return str
+
     def close(self):
         self.connect.close()  # 关闭数据库连接
