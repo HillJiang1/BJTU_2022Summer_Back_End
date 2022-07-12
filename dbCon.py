@@ -7,7 +7,7 @@ class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='yourpassword',
+                                  password='root',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
@@ -565,7 +565,7 @@ class DBController:
 
     def queryHolidays(self):
         try:
-            sql = """SELECT day(date),title FROM `calendar` """
+            sql = """SELECT day(date),title,type FROM `calendar` """
             self.cursor.execute(sql)  # 执行sql语句
             res = self.cursor.fetchall()
             json_data = []
@@ -574,8 +574,10 @@ class DBController:
                 result = {}
                 id = row[0].__str__()
                 title = row[1].replace(" ", "")
+                type=row[2]
                 result['date'] = id
                 result['name'] = title
+                result['type']=type
                 print(result)
                 json_data.append(result)
             print(json_data)
@@ -585,11 +587,11 @@ class DBController:
         print(json_data)
         return jsonify(json_data)
 
-    def addHoliday(self, id, title):
-        sql = """INSERT into calendar(date,title)
-        values (%s,%s)"""
+    def addHoliday(self, id, title,type):
+        sql = """INSERT into calendar(date,title,type)
+        values (%s,%s,%s)"""
         print(sql)
-        values = (id, title)
+        values = (id, title,type)
         self.cursor.execute(sql, values)  # 执行sql语句
         self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
         str = "1"

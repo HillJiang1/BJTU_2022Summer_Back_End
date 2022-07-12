@@ -528,7 +528,8 @@ def holidayAdd():
     db = DBController()
     id=json_data['date']
     title=json_data['name']
-    s = db.addHoliday(id,title)
+    type=json_data['type']
+    s = db.addHoliday(id,title,type)
     print(s)
     return s
 
