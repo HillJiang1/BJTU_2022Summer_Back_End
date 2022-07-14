@@ -532,6 +532,17 @@ def holidayAdd():
     s = db.addHoliday(id,title,type)
     print(s)
     return s
-
+@app.route('/old_details',methods=['POST'])
+def old_details():
+    db = DBController()
+    return db.old_details()
+@app.route('/v_details',methods=['POST'])
+def v_detail():
+    db = DBController()
+    return db.v_details()
+@app.route('/w_details',methods=['POST'])
+def w_detail():
+    db = DBController()
+    return db.w_details()
 if __name__ == '__main__':
     app.run()

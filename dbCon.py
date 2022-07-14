@@ -461,7 +461,7 @@ class DBController:
         plt.title("年龄分析")
         plt.xlabel("年龄段")
         plt.ylabel("人数")
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['年龄段'])
+        plt.legend(loc='upper center', bbox_to_anchor=(0.9, -0.06), fancybox=True, ncol=5, labels=['年龄段'])
         plt.rcParams['font.sans-serif'] = ['SimHei']
         save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\oldAna.png'
         plt.savefig(save_path)
@@ -497,7 +497,7 @@ class DBController:
         x = ("一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月")
         plt.plot(x, y1, label="入职人数")
         plt.plot(x, y2, label="离职人数")
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.06), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
         plt.rcParams['font.sans-serif'] = ['SimHei']
         save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\worker.png'
         plt.savefig(save_path)
@@ -533,7 +533,7 @@ class DBController:
         x = ("一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月")
         plt.plot(x, y1, label="入职人数")
         plt.plot(x, y2, label="离职人数")
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.06), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
         plt.rcParams['font.sans-serif'] = ['SimHei']
         save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\volunteer.png'
         plt.savefig(save_path)
@@ -597,6 +597,65 @@ class DBController:
         str = "1"
 
         return str
-
+    def old_details(self):
+        try:
+            result = {}
+            sql = """select count(id) from old_care.oldperson_info"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['allno']=res[0]
+            sql = """select count(id) from old_care.oldperson_info where gender='男'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['maleno'] = res[0]
+            sql = """select count(id) from old_care.oldperson_info where gender='女'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['femaleno'] = res[0]
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        except:
+            self.connect.rollback()
+        print(result)
+        return jsonify(result)
+    def v_details(self):
+        try:
+            result = {}
+            sql = """select count(id) from old_care.volunteer_info"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['allno']=res[0]
+            sql = """select count(id) from old_care.volunteer_info where checkout_date like '0000-00-00'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['inno'] = res[0]
+            sql = """select count(id) from old_care.volunteer_info where checkout_date not like '0000-00-00'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['outno'] = res[0]
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        except:
+            self.connect.rollback()
+        print(result)
+        return jsonify(result)
+    def w_details(self):
+        try:
+            result = {}
+            sql = """select count(id) from old_care.employee_info"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['allno']=res[0]
+            sql = """select count(id) from old_care.employee_info where resign_date like '0000-00-00'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['inno'] = res[0]
+            sql = """select count(id) from old_care.employee_info where resign_date not like '0000-00-00'"""
+            self.cursor.execute(sql)  # 执行sql语句
+            res = self.cursor.fetchone()
+            result['outno'] = res[0]
+            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        except:
+            self.connect.rollback()
+        print(result)
+        return jsonify(result)
     def close(self):
         self.connect.close()  # 关闭数据库连接
