@@ -8,6 +8,7 @@ import os
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 CORS(app, resources=r'/*')
+# CORS(app, supports_credentials=True)
 
 #登录
 @app.route('/login', methods=['POST'])
@@ -30,7 +31,8 @@ def register():
     # print(json_data)
     data = request.form
     db=DBController()
-    realname=data.get('realname')
+    print(data)
+    realname=data.get('realName')
     sex=data.get('sex')
     email=data.get('email')
     phone=data.get('phone')
@@ -40,7 +42,8 @@ def register():
     code = data.get('code')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    # save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     # 保存
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
@@ -95,7 +98,7 @@ def change():
     file_obj = request.files.get('file')
     print(file_obj)
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     print(123)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
@@ -118,7 +121,7 @@ def add_worker():
     createTime = data.get('createTime')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
     status = db.add_worker(wName, sex, phone, ID, birth, hire_date, des, createTime, file_name, path)
@@ -144,7 +147,7 @@ def change_worker():
     file_obj = request.files.get('file')
     print(file_obj)
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     print(123)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
@@ -224,7 +227,7 @@ def add_volunteer():
     hire_date = data.get('hire_date')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     file_obj.save(save_path)
     print(123)
     path = "http://127.0.0.1:5000/static/img/" + file_name
@@ -250,7 +253,7 @@ def change_volunteer():
     path=' '
     print(file_name)
     if file_name!=None:
-        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+        save_path = 'static/img/' + str(file_name)
         file_obj.save(save_path)
         path = "http://127.0.0.1:5000/static/img/" + file_name
     else:file_name=' '
@@ -344,7 +347,7 @@ def add_Old():
     updateTime = data.get('updateTime')
     updateName = data.get('updateName')
     print(type(file_obj))
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path = 'static/img/' + str(file_name)
     file_obj.save(save_path)
     path = "http://127.0.0.1:5000/static/img/" + file_name
     s = db.addOld(oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName,file_name,path)
@@ -381,7 +384,8 @@ def chanegOld():
     updateName = json_data.get('updateName')
     file_obj = request.files.get('file')
     file_name = request.form.get('fileName')
-    save_path1 = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file_name)
+    save_path1 = 'static/img/' + str(file_name)
+    print(save_path1)
     file_obj.save(save_path1)
     path = "http://127.0.0.1:5000/static/img/" + file_name
     s = db.changeOld(id,oldName,sex,phone,ID,birthday,date_in,date_out,roomNumber,guardian1_name,guardian1_phone,guardian1_wechat,guardian2_name,guardian2_phone,guardian2_wechat,situation,des,createTime,createName,updateTime,updateName,file_name, path)
@@ -431,7 +435,7 @@ def save_picture():
     file1 = file_name.get('fileName')
     data = file_name.get('userid')
     print(data)
-    save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\img' + '\\' + str(file1)
+    save_path = 'static/img/' + str(file1)
     # 保存
     file_obj.save(save_path)
     print(save_path)

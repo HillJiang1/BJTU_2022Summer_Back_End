@@ -3,28 +3,35 @@ from flask import Flask,jsonify,request
 import matplotlib.pyplot as plt
 import os
 
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+
+for font in font_manager.fontManager.ttflist:
+    # 查看字体名以及对应的字体文件名
+    print(font.name, '-', font.fname)
+
 class DBController:
     def __init__(self):
         self.connect = pymysql.connect(host='localhost',  # 本地数据库
                                   user='root',
-                                  password='root',
+                                  password='jiangshan201310.',
                                   db='old_care',
                                   charset='utf8')  # 服务器名,账户,密码，数据库名称
         self.cursor = self.connect.cursor()
 
     #注册
     def register(self,name,pasw,rname,sex,email,phone,des, code, file_name, url):
-        find = "SELECT * FROM invite_code WHERE code = '{}'".format(code)
+        find = "SELECT * FROM inite_code WHERE code = '{}'".format(code)
         self.cursor.execute(find)
         result = self.cursor.fetchall()
         if result:
             time = result[0][1] - 1
             if(time > 0):
-                insert = "UPDATE invite_code SET degree = '{}' WHERE code = '{}'".format(time, code)
+                insert = "UPDATE inite_code SET degree = '{}' WHERE code = '{}'".format(time, code)
                 self.cursor.execute(insert)
                 self.connect.commit()
             else:
-                delete = "DELETE FROM invite_code WHERE code = '{}'".format(code)
+                delete = "DELETE FROM inite_code WHERE code = '{}'".format(code)
                 self.cursor.execute(delete)
                 self.connect.commit()
             sql = """INSERT INTO sys_user (UserName,Password,REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION, imageName, url) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
@@ -87,54 +94,55 @@ class DBController:
     #查询管理员个人信息
     def queryManager(self, userName):
         jdata = []
-        try:
-            sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName, url FROM `sys_user` WHERE UserName= %s """
-            self.cursor.execute(sql, userName)  # 执行sql语句
-            res = self.cursor.fetchall()
-            print(res)
+        # try:
+        sql = """SELECT REAL_NAME,SEX,EMAIL,PHONE,DESCRIPTION,UserName, url FROM `sys_user` WHERE UserName= %s """
+        self.cursor.execute(sql, userName)  # 执行sql语句
+        res = self.cursor.fetchall()
+        print(res)
 
-            for row in res:
-                result = {}
-                realname = row[0].replace(" ", "")
-                sex = row[1].replace(" ", "")
-                email = row[2].replace(" ", "")
-                phone = row[3].replace(" ", "")
-                description = row[4].replace(" ", "")
-                userName = row[5].replace(" ", "")
-                url = row[6]
-                print(userName)
-                result['realName'] = realname
-                result['sex'] = sex
-                result['mail'] = email
-                result['phone'] = phone
-                result['des'] = description
-                result['userName'] = userName
+        for row in res:
+            result = {}
+            realname = row[0]
+            # realname = row[0].replace(" ", "")
+            sex = row[1]
+            email = row[2]
+            phone = row[3]
+            description = row[4]
+            userName = row[5]
+            url = row[6]
+            print(userName)
+            result['realName'] = realname
+            result['sex'] = sex
+            result['mail'] = email
+            result['phone'] = phone
+            result['des'] = description
+            result['userName'] = userName
 
-                result['image'] = url
+            result['image'] = url
 
-                jdata.append(result)
-            print(jdata)
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+            jdata.append(result)
+        print(jdata)
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         return jsonify(jdata[0])
 
     #修改管理员个人信息
     def change(self, userid, realname, sex, email, phone, description,imageName,url):
-        try:
-            str = '0'
-            sql = """UPDATE sys_user SET REAL_NAME=%s,SEX=%s,EMAIL=%s,PHONE=%s,DESCRIPTION=%s,imageName=%s,url=%s WHERE UserName=%s"""
-            print(sql)
-            values = (realname, sex, email, phone, description,imageName, url ,userid )
-            print(values)
-            self.cursor.execute(sql, values)  # 执行sql语句
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+        # try:
+        str = '0'
+        sql = """UPDATE sys_user SET REAL_NAME=%s,SEX=%s,EMAIL=%s,PHONE=%s,DESCRIPTION=%s,imageName=%s,url=%s WHERE UserName=%s"""
+        print(sql)
+        values = (realname, sex, email, phone, description,imageName, url ,userid )
+        print(values)
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         # self.cursor.close()  # 关闭游标
         # self.connect.close()  # 关闭数据库连接
         return str
@@ -216,58 +224,58 @@ class DBController:
     # 查询义工具体信息
     def queryVolunteer(self, id):
         json_data = []
-        try:
-            sql = """SELECT id,name,gender,phone,id_card,birthday,workTime,checkin_date,checkout_date,profile_photo FROM `volunteer_info` WHERE id=%s """
-            self.cursor.execute(sql, id)  # 执行sql语句
-            res = self.cursor.fetchall()
-            print(res)
+        # try:
+        sql = """SELECT id,name,gender,phone,id_card,birthday,workTime,checkin_date,checkout_date,profile_photo FROM `volunteer_info` WHERE id=%s """
+        self.cursor.execute(sql, id)  # 执行sql语句
+        res = self.cursor.fetchall()
+        print(res)
+        str='0'
+        for row in res:
+            result = {}
+            id = row[0]
+            username = row[1]
+            gender = row[2]
+            phone = row[3]
+            id_card = row[4]
+            birthday = row[5].__str__()
+            worktime = row[6]
+            hire_date = row[7].__str__()
+            resign_date = row[8].__str__()
+            profile_photo = row[9]
+            print(1)
+            result['id'] = id
+            result['volunteerName'] = username
+            result['sex'] = gender
+            result['phone'] = phone
+            result['ID'] = id_card
+            result['birthday'] = birthday
+            result['workTime'] = worktime
+            result['hire_date'] = hire_date
+            result['resign_date'] = resign_date
+            result['image'] = profile_photo
 
-            for row in res:
-                result = {}
-                id = row[0]
-                username = row[1]
-                gender = row[2]
-                phone = row[3]
-                id_card = row[4]
-                birthday = row[5].__str__()
-                worktime = row[6]
-                hire_date = row[7].__str__()
-                resign_date = row[8].__str__()
-                profile_photo = row[9]
-                print(1)
-                result['id'] = id
-                result['volunteerName'] = username
-                result['sex'] = gender
-                result['phone'] = phone
-                result['ID'] = id_card
-                result['birthday'] = birthday
-                result['workTime'] = worktime
-                result['hire_date'] = hire_date
-                result['resign_date'] = resign_date
-                result['image'] = profile_photo
-
-                json_data.append(result)
-            print(json_data)
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+            json_data.append(result)
+        print(json_data)
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         return jsonify(json_data[0])
 
     #删除义工信息
     def deleteVolunteer(self, id):
-        try:
-            str = '0'
-            sql = """DELETE FROM volunteer_info WHERE id=%s"""
-            print(sql)
-            values = (id)
-            self.cursor.execute(sql, values)  # 执行sql语句
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+        # try:
+        str = '0'
+        sql = """DELETE FROM volunteer_info WHERE id=%s"""
+        print(sql)
+        values = (id)
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         return str
 
     #读取突发情况记录
@@ -282,45 +290,45 @@ class DBController:
     def addOld(self, oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name,
                    guardian1_phone, guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des,
                    createTime, createName, updateTime, updateName,file_name, url):
-        try:
-            sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY,imgset_dir, profile_photo)
-    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-            print(sql)
-            values = (
-                    oldName, sex, phone, ID, birthday, date_in, roomNumber, guardian1_name, guardian1_phone,
-                    guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
-                    createName, updateTime, updateName,file_name, url)
-            # values = (
-            #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
+        # try:
+        sql = """INSERT into oldperson_info(username,gender,phone,id_card,birthday,checkin_date,room_number,firstguardian_name,firstguardian_phone,firstguardian_wechat,secondguardian_name,secondguardian_phone,secondguardian_wechat,health_state,DESCRIPTION,CREATED,CREATEBY,UPDATED,UPDATEBY,imgset_dir, profile_photo)
+values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        print(sql)
+        values = (
+                oldName, sex, phone, ID, birthday, date_in, roomNumber, guardian1_name, guardian1_phone,
+                guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
+                createName, updateTime, updateName,file_name, url)
+        # values = (
+        #     'zhang','male','234212321','1231313213211221','2002-02-10','2002-02-20','2002-03-30','202','chua','1232123131','312313131','eqwq','23131313132','31312132','health','dasadasda','2002-01-20','111','2005-04-23','111')
 
-            self.cursor.execute(sql, values)  # 执行sql语句
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
-            # self.cursor.close()  # 关闭游标
-            # self.connect.close()  # 关闭数据库连接
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
+        #     # self.cursor.close()  # 关闭游标
+        #     # self.connect.close()  # 关闭数据库连接
         return str
 
     #修改老人信息
     def changeOld(self, id, oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name,
                       guardian1_phone, guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation,
                       des, createTime, createName, updateTime, updateName,file_name, url):
-        try:
-            str = '0'
-            sql = """UPDATE oldperson_info SET username=%s,gender=%s,phone=%s,id_card=%s,birthday=%s,checkin_date=%s,checkout_date=%s,room_number=%s,firstguardian_name=%s,firstguardian_phone=%s,firstguardian_wechat=%s,secondguardian_name=%s,secondguardian_phone=%s,secondguardian_wechat=%s,health_state=%s,DESCRIPTION=%s,CREATED=%s,CREATEBY=%s,UPDATED=%s,UPDATEBY=%s,imgset_dir=%s, profile_photo=%s WHERE id=%s"""
-            print(sql)
-            values = (
-                oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name, guardian1_phone,
-                guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
-                createName, updateTime, updateName,file_name,url, id)
-            self.cursor.execute(sql, values)  # 执行sql语句
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+        # try:
+        str = '0'
+        sql = """UPDATE oldperson_info SET username=%s,gender=%s,phone=%s,id_card=%s,birthday=%s,checkin_date=%s,checkout_date=%s,room_number=%s,firstguardian_name=%s,firstguardian_phone=%s,firstguardian_wechat=%s,secondguardian_name=%s,secondguardian_phone=%s,secondguardian_wechat=%s,health_state=%s,DESCRIPTION=%s,CREATED=%s,CREATEBY=%s,UPDATED=%s,UPDATEBY=%s,imgset_dir=%s, profile_photo=%s WHERE id=%s"""
+        print(sql)
+        values = (
+            oldName, sex, phone, ID, birthday, date_in, date_out, roomNumber, guardian1_name, guardian1_phone,
+            guardian1_wechat, guardian2_name, guardian2_phone, guardian2_wechat, situation, des, createTime,
+            createName, updateTime, updateName,file_name,url, id)
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
             # self.cursor.close()  # 关闭游标
             # self.connect.close()  # 关闭数据库连接
         print(str)
@@ -329,113 +337,113 @@ class DBController:
     #查询老人信息
     def queryOlds(self):
         print("res")
-        try:
-            sql = """SELECT id,username,gender,phone,room_number,firstguardian_phone FROM `oldperson_info` """
-            self.cursor.execute(sql)  # 执行sql语句
-            res=self.cursor.fetchall()
-            json_data=[]
-            for row in res:
-                print(row)
-                result={}
-                id=row[0]
-                username=row[1].replace(" ", "")
-                gender = row[2].replace(" ", "")
-                phone = row[3].replace(" ", "")
-                room_number = row[4].replace(" ", "")
-                firstguardian_phone = row[5].replace(" ", "")
-                result['id']=id
-                result['oldName']=username
-                result['sex']=gender
-                result['phone']=phone
-                result['roomNumber']=room_number
-                result['guardian1_phone']=firstguardian_phone
-                print(result)
-                json_data.append(result)
-            print(json_data)
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        except:
-            self.connect.rollback()
+        # try:
+        sql = """SELECT id,username,gender,phone,room_number,firstguardian_phone FROM `oldperson_info` """
+        self.cursor.execute(sql)  # 执行sql语句
+        res=self.cursor.fetchall()
+        json_data=[]
+        for row in res:
+            print(row)
+            result={}
+            id=row[0]
+            username=row[1].replace(" ", "")
+            gender = row[2].replace(" ", "")
+            phone = row[3].replace(" ", "")
+            room_number = row[4].replace(" ", "")
+            firstguardian_phone = row[5].replace(" ", "")
+            result['id']=id
+            result['oldName']=username
+            result['sex']=gender
+            result['phone']=phone
+            result['roomNumber']=room_number
+            result['guardian1_phone']=firstguardian_phone
+            print(result)
+            json_data.append(result)
+        print(json_data)
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        # except:
+        #     self.connect.rollback()
 
         return jsonify(json_data)
 
     # 查询老人具体信息
     def queryOld(self, id):
         print("res")
-        try:
-            sql = """SELECT * FROM `oldperson_info` WHERE id=%s """
-            self.cursor.execute(sql, id)  # 执行sql语句
-            res = self.cursor.fetchall()
-            print(res)
-            json_data = []
-            for row in res:
-                result = {}
-                id = row[0]
-                username = row[1].replace(" ", "")
-                gender = row[2].replace(" ", "")
-                phone = row[3].replace(" ", "")
-                id_card = row[4].replace(" ", "")
-                birthday = row[5].__str__()
-                checkin_date = row[6].__str__()
-                checkout_date = row[7].__str__()
-                img = row[9]
-                room_number = row[10].replace(" ", "")
-                firstguardian_name = row[11].replace(" ", "")
-                firstguardian_phone = row[13].replace(" ", "")
-                firstguardian_wechat = row[14].replace(" ", "")
-                secondguardian_name = row[15].replace(" ", "")
-                secondguardian_phone = row[17].replace(" ", "")
-                secondguardian_wechat = row[18].replace(" ", "")
-                health_state = row[19].replace(" ", "")
-                description = row[20].replace(" ", "")
-                created = row[22].__str__()
-                createby = row[23].replace(" ", "")
-                updated = row[24].__str__()
-                updateby = row[25].replace(" ", "")
+        # try:
+        sql = """SELECT * FROM `oldperson_info` WHERE id=%s """
+        self.cursor.execute(sql, id)  # 执行sql语句
+        res = self.cursor.fetchall()
+        print(res)
+        json_data = []
+        for row in res:
+            result = {}
+            id = row[0]
+            username = row[1].replace(" ", "")
+            gender = row[2].replace(" ", "")
+            phone = row[3].replace(" ", "")
+            id_card = row[4].replace(" ", "")
+            birthday = row[5].__str__()
+            checkin_date = row[6].__str__()
+            checkout_date = row[7].__str__()
+            img = row[9]
+            room_number = row[10].replace(" ", "")
+            firstguardian_name = row[11].replace(" ", "")
+            firstguardian_phone = row[13].replace(" ", "")
+            firstguardian_wechat = row[14].replace(" ", "")
+            secondguardian_name = row[15].replace(" ", "")
+            secondguardian_phone = row[17].replace(" ", "")
+            secondguardian_wechat = row[18].replace(" ", "")
+            health_state = row[19].replace(" ", "")
+            description = row[20]
+            created = row[22].__str__()
+            createby = row[23]
+            updated = row[24].__str__()
+            updateby = row[25]
 
-                result['id'] = id
-                result['oldName'] = username
-                result['sex'] = gender
-                result['phone'] = phone
-                result['ID'] = id_card
-                result['birthday'] = birthday
-                result['date_in'] = checkin_date
-                result['date_out'] = checkout_date
-                result['image'] = img
-                result['roomNumber'] = room_number
-                result['guardian1_name'] = firstguardian_name
-                result['guardian1_phone'] = firstguardian_phone
-                result['guardian1_wechat'] = firstguardian_wechat
-                result['guardian2_name'] = secondguardian_name
-                result['guardian2_phone'] = secondguardian_phone
-                result['guardian2_wechat'] = secondguardian_wechat
-                result['situation'] = health_state
-                result['des'] = description
-                result['createTime'] = created
-                result['createName'] = createby
-                result['updateTime'] = updated
-                result['updateName'] = updateby
-                json_data.append(result)
-            print(json_data)
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+            result['id'] = id
+            result['oldName'] = username
+            result['sex'] = gender
+            result['phone'] = phone
+            result['ID'] = id_card
+            result['birthday'] = birthday
+            result['date_in'] = checkin_date
+            result['date_out'] = checkout_date
+            result['image'] = img
+            result['roomNumber'] = room_number
+            result['guardian1_name'] = firstguardian_name
+            result['guardian1_phone'] = firstguardian_phone
+            result['guardian1_wechat'] = firstguardian_wechat
+            result['guardian2_name'] = secondguardian_name
+            result['guardian2_phone'] = secondguardian_phone
+            result['guardian2_wechat'] = secondguardian_wechat
+            result['situation'] = health_state
+            result['des'] = description
+            result['createTime'] = created
+            result['createName'] = createby
+            result['updateTime'] = updated
+            result['updateName'] = updateby
+            json_data.append(result)
+        print(json_data)
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         return jsonify(json_data[0])
 
     #删除老人信息
     def deleteOld(self,id):
-        try:
-            str = '0'
-            sql = """DELETE FROM oldperson_info WHERE id=%s"""
-            print(sql)
-            values = (id)
-            self.cursor.execute(sql, values)  # 执行sql语句
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-            str = "1"
-        except:
-            self.connect.rollback()
-            str = "0"
+        # try:
+        str = '0'
+        sql = """DELETE FROM oldperson_info WHERE id=%s"""
+        print(sql)
+        values = (id)
+        self.cursor.execute(sql, values)  # 执行sql语句
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        str = "1"
+        # except:
+        #     self.connect.rollback()
+        #     str = "0"
         # self.cursor.close()  # 关闭游标
         # self.connect.close()  # 关闭数据库连接
         return str
@@ -462,8 +470,8 @@ class DBController:
         plt.xlabel("年龄段")
         plt.ylabel("人数")
         plt.legend(loc='upper center', bbox_to_anchor=(0.9, -0.06), fancybox=True, ncol=5, labels=['年龄段'])
-        plt.rcParams['font.sans-serif'] = ['SimHei']
-        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\oldAna.png'
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+        save_path = 'static/image/oldAna.png'
         plt.savefig(save_path)
         plt.show()
 
@@ -498,8 +506,9 @@ class DBController:
         plt.plot(x, y1, label="入职人数")
         plt.plot(x, y2, label="离职人数")
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.06), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
-        plt.rcParams['font.sans-serif'] = ['SimHei']
-        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\worker.png'
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+        # save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\worker.png'
+        save_path = 'static/image/worker.png'
         plt.savefig(save_path)
         plt.show()
 
@@ -534,8 +543,9 @@ class DBController:
         plt.plot(x, y1, label="入职人数")
         plt.plot(x, y2, label="离职人数")
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.06), fancybox=True, ncol=5, labels=['入职人数', '离职人数'])
-        plt.rcParams['font.sans-serif'] = ['SimHei']
-        save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\volunteer.png'
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+        # save_path = os.path.abspath(os.path.dirname(__file__) + '\\static') + '\\image' + '\\volunteer.png'
+        save_path = 'static/image/volunteer.png'
         plt.savefig(save_path)
         plt.show()
 
@@ -564,26 +574,26 @@ class DBController:
         return result
 
     def queryHolidays(self):
-        try:
-            sql = """SELECT day(date),title,type FROM `calendar` """
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchall()
-            json_data = []
-            for row in res:
-                print(row)
-                result = {}
-                id = row[0].__str__()
-                title = row[1].replace(" ", "")
-                type=row[2]
-                result['date'] = id
-                result['name'] = title
-                result['type']=type
-                print(result)
-                json_data.append(result)
-            print(json_data)
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        except:
-            self.connect.rollback()
+        # try:
+        sql = """SELECT day(date),title,type FROM `calendar` """
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchall()
+        json_data = []
+        for row in res:
+            print(row)
+            result = {}
+            id = row[0].__str__()
+            title = row[1].replace(" ", "")
+            type=row[2]
+            result['date'] = id
+            result['name'] = title
+            result['type']=type
+            print(result)
+            json_data.append(result)
+        print(json_data)
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        # except:
+        #     self.connect.rollback()
         print(json_data)
         return jsonify(json_data)
 
@@ -598,64 +608,64 @@ class DBController:
 
         return str
     def old_details(self):
-        try:
-            result = {}
-            sql = """select count(id) from old_care.oldperson_info"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['allno']=res[0]
-            sql = """select count(id) from old_care.oldperson_info where gender='男'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['maleno'] = res[0]
-            sql = """select count(id) from old_care.oldperson_info where gender='女'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['femaleno'] = res[0]
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        except:
-            self.connect.rollback()
+        # try:
+        result = {}
+        sql = """select count(id) from old_care.oldperson_info"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['allno']=res[0]
+        sql = """select count(id) from old_care.oldperson_info where gender='男'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['maleno'] = res[0]
+        sql = """select count(id) from old_care.oldperson_info where gender='女'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['femaleno'] = res[0]
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        # except:
+        #     self.connect.rollback()
         print(result)
         return jsonify(result)
     def v_details(self):
-        try:
-            result = {}
-            sql = """select count(id) from old_care.volunteer_info"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['allno']=res[0]
-            sql = """select count(id) from old_care.volunteer_info where checkout_date like '0000-00-00'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['inno'] = res[0]
-            sql = """select count(id) from old_care.volunteer_info where checkout_date not like '0000-00-00'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['outno'] = res[0]
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        except:
-            self.connect.rollback()
+        # try:
+        result = {}
+        sql = """select count(id) from old_care.volunteer_info"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['allno']=res[0]
+        sql = """select count(id) from old_care.volunteer_info where checkout_date like '1997-10-11'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['inno'] = res[0]
+        sql = """select count(id) from old_care.volunteer_info where checkout_date not like '1997-10-11'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['outno'] = res[0]
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        # except:
+        #     self.connect.rollback()
         print(result)
         return jsonify(result)
     def w_details(self):
-        try:
-            result = {}
-            sql = """select count(id) from old_care.employee_info"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['allno']=res[0]
-            sql = """select count(id) from old_care.employee_info where resign_date like '0000-00-00'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['inno'] = res[0]
-            sql = """select count(id) from old_care.employee_info where resign_date not like '0000-00-00'"""
-            self.cursor.execute(sql)  # 执行sql语句
-            res = self.cursor.fetchone()
-            result['outno'] = res[0]
-            self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
-        except:
-            self.connect.rollback()
-        print(result)
+        # try:
+        result = {}
+        sql = """select count(id) from old_care.employee_info"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['allno']=res[0]
+        sql = """select count(id) from old_care.employee_info where resign_date like '1980-01-01'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['inno'] = res[0]
+        sql = """select count(id) from old_care.employee_info where resign_date not like '1980-01-01'"""
+        self.cursor.execute(sql)  # 执行sql语句
+        res = self.cursor.fetchone()
+        result['outno'] = res[0]
+        self.connect.commit()  # COMMIT命令用于把事务所做的修改保存到数据库
+        # except:
+        #     self.connect.rollback()
+        # print(result)
         return jsonify(result)
     def close(self):
         self.connect.close()  # 关闭数据库连接
